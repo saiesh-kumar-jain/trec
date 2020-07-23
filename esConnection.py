@@ -24,7 +24,8 @@ def home():
             data = eachLine.split()
             scoredDocs.append(data[2])
     file.close()
-    return render_template("assesment.html", docs=topDocs, query=query, scoredDocs=scoredDocs)
+    res = [i for i in topDocs if i['docId'].replace("%26","&") not in scoredDocs]
+    return render_template("assesment.html", docs=res, query=query, scoredDocs=scoredDocs)
 
 # @app.route("/evaluateDocs", methods = ["POST", "GET"])
 # def evaluateDocs():
@@ -43,16 +44,17 @@ def scoreDocument():
     score = request.args.get("score")
     print(score)
     with open("./qreldata/qrelsaiesh.txt","a") as file:
-        l = "\n" + queryId + " " + name +" "+ docId + " " + str(score)
+        l = "\n" + queryId + " " + name +" "+ docId.replace("%26","&") + " " + str(score)
         file.write(l)
     file.close()
-
+    scoredDocs.clear()
     with open("./qreldata/qrelsaiesh.txt", "r") as file:
         for eachLine in file:
             data = eachLine.split()
             scoredDocs.append(data[2])
     file.close()
-    return render_template("assesment.html", docs=topDocs, query=query, scoredDocs = scoredDocs)
+    res = [i for i in topDocs if i['docId'].replace("%26","&") not in scoredDocs]
+    return render_template("assesment.html", docs=res, query=query, scoredDocs = scoredDocs)
 
 def getResults():
     global topDocs
@@ -73,7 +75,7 @@ def getResults():
         temp = {}
         temp["id"] = result["_source"]["id"]
         temp["text"] = result["_source"]["text"]
-        temp["docId"] = result["_id"]
+        temp["docId"] = str(result["_id"]).replace("&","%26")
         topDocs.append(temp)
 
     print(len(topDocs))
